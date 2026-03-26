@@ -36,17 +36,17 @@
 <div id="container"><p class="loading">Loading data...</p></div>
 
 <script>
-  const URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTxSVvzKEJNiR-OBPAeJ367O6hBJcHpWbQmYpzAAm8PKQr6U4ej6w5-QYzDWYyGaSoZ7mk6cZk2TcQ0/pub?gid=0&single=true&output=json&tqx=out:json`;
+  const URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTxSVvzKEJNiR-OBPAeJ367O6hBJcHpWbQmYpzAAm8PKQr6U4ej6w5-QYzDWYyGaSoZ7mk6cZk2TcQ0/pub?gid=0&single=true&output=csv`;
 
   async function loadData() {
     try {
       const res = await fetch(URL);
       const text = await res.text();
-      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/)[1]);
-      const rows = json.table.rows.map(r => ({
-        theme: r.c[0]?.v ?? "",
-        count: Number(r.c[1]?.v ?? 0)
-      }));
+      const lines = text.trim().split("\n").slice(1); // skip header row
+      const rows = lines.map(line => {
+        const [theme, count] = line.split(",");
+        return { theme: theme?.trim(), count: Number(count?.trim()) };
+      });
 
       if (!rows || rows.length === 0) {
         document.getElementById("container").innerHTML = "<p class='error'>No data found in sheet.</p>";
